@@ -2,12 +2,8 @@
     "framework": "vite",
     "rewrites": [
         {
-            "source": "/api/pln-customers(.*)",
-            "destination": "/api/pln-customers$1"
-        },
-        {
             "source": "/api/(.*)",
-            "destination": "http://GANTI_DENGAN_IP_VPS_ATAU_CLOUDFLARE_URL/api/$1"
+            "destination": "/api/index.js"
         },
         {
             "source": "/(.*)",
