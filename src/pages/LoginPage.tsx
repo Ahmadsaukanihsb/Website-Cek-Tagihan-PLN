@@ -116,7 +116,8 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                             )}
                         </Button>
                     </form>
-                    </div>
+
+
                 </CardContent>
             </Card>
         </div>
