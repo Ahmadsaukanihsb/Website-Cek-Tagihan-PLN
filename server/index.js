@@ -320,15 +320,19 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 API Server running on http://localhost:${PORT}`);
-    console.log(`📡 Endpoints:`);
-    console.log(`   POST /api/auth/login`);
-    console.log(`   GET  /api/transactions`);
-    console.log(`   POST /api/transactions`);
-    console.log(`   DELETE /api/transactions/:id`);
-    console.log(`   POST /api/cek-tagihan-pln`);
-    console.log(`   GET  /api/pln-customers`);
-    console.log(`   POST /api/pln-customers`);
-    console.log(`   POST /api/pln-customers/:id/bills`);
-});
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`🚀 API Server running on http://localhost:${PORT}`);
+        console.log(`📡 Endpoints:`);
+        console.log(`   POST /api/auth/login`);
+        console.log(`   GET  /api/transactions`);
+        console.log(`   POST /api/transactions`);
+        console.log(`   DELETE /api/transactions/:id`);
+        console.log(`   POST /api/cek-tagihan-pln`);
+        console.log(`   GET  /api/pln-customers`);
+        console.log(`   POST /api/pln-customers`);
+        console.log(`   POST /api/pln-customers/:id/bills`);
+    });
+}
+
+export default app;
