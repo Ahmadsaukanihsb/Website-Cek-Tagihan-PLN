@@ -116,11 +116,6 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                             )}
                         </Button>
                     </form>
-
-                    <div className="mt-6 pt-6 border-t border-gray-100 text-center">
-                        <p className="text-sm text-gray-500">
-                            Default: admin / admin123
-                        </p>
                     </div>
                 </CardContent>
             </Card>
