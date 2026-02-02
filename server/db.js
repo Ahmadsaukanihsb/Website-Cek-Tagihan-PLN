@@ -9,17 +9,19 @@ let isConnected = false;
 
 export const connectDB = async () => {
     if (isConnected) {
-        console.log('📦 Using existing MongoDB connection');
         return;
     }
 
     try {
-        const conn = await mongoose.connect(MONGODB_URI);
+        const conn = await mongoose.connect(MONGODB_URI, {
+            bufferCommands: false, // Disable mongoose buffering
+            serverSelectionTimeoutMS: 5000, // Fail fast if no connection
+        });
         isConnected = true;
         console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
     } catch (error) {
         console.error('❌ MongoDB connection error:', error.message);
-        process.exit(1);
+        throw error; // Throw error instead of exit for serverless
     }
 };
 

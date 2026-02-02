@@ -17,6 +17,7 @@ cd scraper_service
 docker build -t pln-scraper .
 
 # Run Container (background)
+# Port 8000 exposed
 docker run -d -p 8000:8000 --name scraper --restart always pln-scraper
 ```
 
@@ -30,10 +31,22 @@ curl http://localhost:8000
 1. Push folder `app` ini ke GitHub (Repository 1).
 2. Import project ke Vercel.
 3. Di Settings > Environment Variables:
-   - `PYTHON_API_URL`: `http://IP_VPS:8000` (atau URL Cloudflare Tunnel)
+   - `PYTHON_API_URL`: URL ke VPS Scraper. See section 3 for options.
    - `MONGODB_URI`: Connection string MongoDB Atlas.
-4. Update `vercel.json` jika perlu penyesuaian proxy.
 
-## Catatan Keamanan
-- Pastikan VPS firewall hanya membuka port 8000 untuk IP tertentu jika memungkinkan.
-- Gunakan Cloudflare Tunnel untuk HTTPS gratis ke VPS.
+## 3. Konfigurasi Domain Scraper (PENTING)
+
+frontend Vercel berjalan di HTTPS, jadi Scraper sebaiknya juga HTTPS.
+
+**Opsi A: Menggunakan Domain (Disarankan)**
+1. Beli domain/subdomain (contoh: `api.websiteku.com`).
+2. Masukkan **A Record** di DNS Manager domain Anda, arahkan ke **IP Public VPS**.
+3. Di VPS, install **Nginx** dan **Certbot** untuk SSL gratis.
+   - Proxy `api.websiteku.com` ke `localhost:8000`.
+4. Di Vercel ENV, set `PYTHON_API_URL` = `https://api.websiteku.com`.
+
+**Opsi B: Cloudflare Tunnel (Mudah & Gratis)**
+1. Install `cloudflared` di VPS.
+2. Jalankan: `cloudflared tunnel --url http://localhost:8000`
+3. Copy URL HTTPS yang muncul (contoh: `https://cool-api.trycloudflare.com`).
+4. Di Vercel ENV, set `PYTHON_API_URL` = URL tersebut.

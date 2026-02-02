@@ -163,8 +163,10 @@ app.post('/api/cek-tagihan-pln', async (req, res) => {
         console.log(`[PLN API] Checking bill for: ${customer_number}`);
 
         const axios = (await import('axios')).default;
+        // Remove trailing slash if present
+        const baseUrl = PYTHON_API_URL.replace(/\/$/, "");
         const pythonResponse = await axios.post(
-            `${PYTHON_API_URL}/api/pln/postpaid`,
+            `${baseUrl}/api/pln/postpaid`,
             { customer_number },
             { timeout: 60000 }  // 60 seconds for Playwright
         );
@@ -181,10 +183,27 @@ app.post('/api/cek-tagihan-pln', async (req, res) => {
 
     } catch (error) {
         console.error('[PLN API] Error:', error.message);
-        res.status(500).json({
+
+        let errorMessage = 'Gagal mengecek tagihan PLN.';
+        let statusCode = 500;
+
+        if (error.code === 'ECONNREFUSED' || error.message.includes('ECONNREFUSED')) {
+            errorMessage = 'Scraper Service tidak aktif/tidak bisa dihubungi.';
+            statusCode = 503;
+        } else if (error.code === 'ETIMEDOUT') {
+            errorMessage = 'Scraper Service timeout.';
+            statusCode = 504;
+        }
+
+        if (!PYTHON_API_URL) {
+            errorMessage = 'PYTHON_API_URL belum dikonfigurasi di Environment Variables.';
+            statusCode = 500;
+        }
+
+        res.status(statusCode).json({
             status: false,
-            message: 'Gagal mengecek tagihan PLN. Coba lagi.',
-            error: error.message,
+            message: errorMessage,
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined,
         });
     }
 });
