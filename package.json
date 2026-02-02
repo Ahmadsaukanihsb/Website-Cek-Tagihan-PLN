@@ -4,10 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run dev:vite\" \"npm run dev:server\" \"npm run dev:python\"",
+    "dev": "concurrently \"npm run dev:vite\" \"npm run dev:server\"",
     "dev:vite": "vite",
     "dev:server": "node server/index.js",
-    "dev:python": "py -3.11 api_server.py",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
