@@ -268,100 +268,76 @@ const Dashboard = ({ onBackToHome }: DashboardProps) => {
         setIsEditingAdminFee(false);
     };
 
-    // Handle print
+    // Handle print - Plain text format for thermal printers
     const handlePrint = () => {
         if (!plnResult?.success) return;
 
-        const printContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Struk Tagihan PLN</title>
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: 'Courier New', monospace; padding: 20px; max-width: 300px; margin: 0 auto; }
-          .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
-          .header h1 { font-size: 18px; margin-bottom: 5px; }
-          .header p { font-size: 12px; color: #666; }
-          .row { display: flex; justify-content: space-between; margin: 5px 0; font-size: 12px; }
-          .row .label { color: #666; }
-          .row .value { font-weight: bold; text-align: right; }
-          .divider { border-top: 1px dashed #000; margin: 10px 0; }
-          .total { font-size: 16px; font-weight: bold; }
-          .footer { text-align: center; margin-top: 20px; font-size: 10px; color: #666; }
-          @media print {
-            body { padding: 0; }
-            @page { margin: 10mm; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>STRUK TAGIHAN PLN</h1>
-          <p>${new Date().toLocaleString('id-ID')}</p>
-        </div>
-        
-        <div class="row">
-          <span class="label">No Pelanggan</span>
-          <span class="value">${plnResult.customerNumber}</span>
-        </div>
-        <div class="row">
-          <span class="label">Nama</span>
-          <span class="value">${plnResult.customerName}</span>
-        </div>
-        <div class="row">
-          <span class="label">Tarif/Daya</span>
-          <span class="value">${plnResult.tariffPower}</span>
-        </div>
-        <div class="row">
-          <span class="label">Stand Meter</span>
-          <span class="value">${plnResult.standMeter}</span>
-        </div>
-        
-        <div class="divider"></div>
-        
-        ${plnResult.billDetails?.map(d => `
-          <div class="row">
-            <span class="label">${d.period}</span>
-            <span class="value">Rp${d.amount.toLocaleString('id-ID')}</span>
-          </div>
-        `).join('') || ''}
-        
-        <div class="divider"></div>
-        
-        <div class="row">
-          <span class="label">Rp Tagihan</span>
-          <span class="value">Rp${(plnResult.billAmount || 0).toLocaleString('id-ID')}</span>
-        </div>
-        <div class="row">
-          <span class="label">Admin Bank</span>
-          <span class="value">Rp${(plnResult.adminFee || 0).toLocaleString('id-ID')}</span>
-        </div>
-        
-        <div class="divider"></div>
-        
-        <div class="row total">
-          <span>TOTAL BAYAR</span>
-          <span>Rp${(plnResult.totalPayment || 0).toLocaleString('id-ID')}</span>
-        </div>
-        
-        <div class="footer">
-          <p>Terima kasih atas pembayaran Anda</p>
-          <p>Simpan struk ini sebagai bukti pembayaran</p>
-        </div>
-      </body>
-      </html>
-    `;
+        // Format currency helper
+        const fmt = (n: number) => `Rp ${n.toLocaleString('id-ID')}`;
+
+        // Build plain text receipt (32 char width for 58mm thermal)
+        const line = '================================';
+        const dashed = '--------------------------------';
+
+        let receipt = `
+${line}
+       STRUK TAGIHAN PLN
+${line}
+${new Date().toLocaleString('id-ID')}
+${dashed}
+No Pelanggan : ${plnResult.customerNumber || '-'}
+Nama         : ${plnResult.customerName || '-'}
+Tarif/Daya   : ${plnResult.tariffPower || '-'}
+Stand Meter  : ${plnResult.standMeter || '-'}
+${dashed}
+`;
+
+        // Add bill details if any
+        if (plnResult.billDetails && plnResult.billDetails.length > 0) {
+            plnResult.billDetails.forEach(d => {
+                receipt += `${d.period.padEnd(16)} ${fmt(d.amount).padStart(15)}\n`;
+            });
+            receipt += dashed + '\n';
+        }
+
+        receipt += `Tagihan      : ${fmt(plnResult.billAmount || 0)}
+Admin Bank   : ${fmt(plnResult.adminFee || 0)}
+${dashed}
+TOTAL BAYAR  : ${fmt(plnResult.totalPayment || 0)}
+${line}
+   Terima kasih atas pembayaran
+      Simpan struk sebagai bukti
+${line}
+`;
+
+        // Create simple HTML with preformatted text
+        const printContent = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Struk PLN</title>
+<style>
+body{margin:0;padding:5mm;font-family:monospace;font-size:10pt;}
+pre{white-space:pre-wrap;margin:0;}
+@media print{@page{margin:0;size:58mm auto;}}
+</style>
+</head>
+<body>
+<pre>${receipt}</pre>
+<script>
+window.onload = function() {
+    window.print();
+};
+</script>
+</body>
+</html>`;
 
         const printWindow = window.open('', '_blank');
         if (printWindow) {
             printWindow.document.write(printContent);
             printWindow.document.close();
-            printWindow.focus();
-            setTimeout(() => {
-                printWindow.print();
-                printWindow.close();
-            }, 250);
+        } else {
+            alert('Popup diblokir! Izinkan popup untuk mencetak.');
         }
     };
 

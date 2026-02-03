@@ -16,9 +16,6 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Connect to MongoDB
-connectDB();
-
 // Enable CORS for all origins
 app.use(cors());
 
@@ -45,8 +42,11 @@ const seedAdmin = async () => {
     }
 };
 
-// Run seeds
-seedAdmin();
+// Connect to MongoDB first, then seed
+(async () => {
+    await connectDB();
+    await seedAdmin();
+})();
 
 // ==========================================
 // AUTH ENDPOINTS
@@ -109,6 +109,8 @@ app.post('/api/transactions', async (req, res) => {
         const count = await Transaction.countDocuments();
         const id = `TRX${String(count + 1).padStart(3, '0')}`;
 
+        console.log('[Transactions] Received create request:', req.body);
+
         const transaction = await Transaction.create({
             id,
             customerNumber,
@@ -117,6 +119,8 @@ app.post('/api/transactions', async (req, res) => {
             amount,
             status: status || 'success',
         });
+
+        console.log('[Transactions] Created successfully:', transaction);
 
         res.status(201).json({ success: true, data: transaction });
     } catch (error) {

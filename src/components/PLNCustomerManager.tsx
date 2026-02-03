@@ -158,9 +158,38 @@ export default function PLNCustomerManager({ onClose }: PLNCustomerManagerProps)
                 setCustomers(customers.map(c =>
                     c.customerNumber === customerNumber ? data.data : c
                 ));
+
+                // Also save to Transaction History for Admin Dashboard
+                const customer = customers.find(c => c.customerNumber === customerNumber);
+                const bill = customer?.bills[billIndex];
+
+                if (customer && bill) {
+                    try {
+                        const trxRes = await fetch('/api/transactions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                customerNumber: customer.customerNumber,
+                                customerName: customer.customerName,
+                                type: 'PLN',
+                                amount: bill.amount,
+                                status: 'success'
+                            })
+                        });
+
+                        if (trxRes.ok) {
+                            alert('Pembayaran berhasil dan riwayat transaksi disimpan!');
+                        } else {
+                            alert('Pembayaran berhasil, tapi gagal menyimpan riwayat transaksi.');
+                        }
+                    } catch (err) {
+                        console.error('Failed to save transaction history:', err);
+                    }
+                }
             }
         } catch (error) {
             console.error('Failed to pay bill:', error);
+            alert('Gagal memproses pembayaran');
         }
     };
 

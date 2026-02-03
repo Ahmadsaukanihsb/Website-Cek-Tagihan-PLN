@@ -523,7 +523,7 @@ const BillCheckForm = () => {
                         </div>
                       </div>
 
-                      <Button className="w-full bg-gradient-blue text-white py-4 rounded-xl font-semibold hover:shadow-glow-lg transition-all duration-300">
+                      <Button className="w-full bg-gradient-blue text-white py-4 rounded-xl font-semibold hover:shadow-glow-lg transition-all duration-300 mb-4">
                         Bayar Sekarang
                       </Button>
                     </div>
